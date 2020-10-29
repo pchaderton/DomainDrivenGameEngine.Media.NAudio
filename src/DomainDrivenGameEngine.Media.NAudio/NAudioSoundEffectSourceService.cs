@@ -14,7 +14,7 @@ namespace DomainDrivenGameEngine.Media.NAudio
     /// <remarks>
     /// Only supports formats that NAudio natively supports, minus any format loaded via the <see cref="MediaFoundationReader"/>.
     /// </remarks>
-    public class NAudioSoundEffectSourceService : BaseStreamMediaSourceService<SoundEffect>
+    public class NAudioSoundEffectSourceService : BaseMediaSourceService<SoundEffect>
     {
         /// <summary>
         /// The extensions this source service supports.
@@ -29,16 +29,14 @@ namespace DomainDrivenGameEngine.Media.NAudio
         /// <summary>
         /// Initializes a new instance of the <see cref="NAudioSoundEffectSourceService"/> class.
         /// </summary>
-        /// <param name="fileStreamService">A <see cref="IFileStreamService"/> to use to generate streams to files.</param>
-        public NAudioSoundEffectSourceService(IFileStreamService fileStreamService)
-            : base(SupportedExtensions, fileStreamService)
+        public NAudioSoundEffectSourceService()
+            : base(SupportedExtensions)
         {
         }
 
         /// <inheritdoc/>
-        public override SoundEffect Load(Stream stream, string path)
+        public override SoundEffect Load(Stream stream, string path, string extension)
         {
-            var extension = Path.GetExtension(path).ToLowerInvariant();
             using (var waveStream = GetWaveStream(stream, path))
             {
                 var waveProvider16 = waveStream.ToSampleProvider()
