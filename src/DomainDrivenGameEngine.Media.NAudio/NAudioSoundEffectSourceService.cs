@@ -37,7 +37,7 @@ namespace DomainDrivenGameEngine.Media.NAudio
         /// <inheritdoc/>
         public override SoundEffect Load(Stream stream, string path, string extension)
         {
-            using (var waveStream = GetWaveStream(stream, path))
+            using (var waveStream = GetWaveStream(stream, extension))
             {
                 var waveProvider16 = waveStream.ToSampleProvider()
                                                .ToWaveProvider16();
@@ -69,13 +69,10 @@ namespace DomainDrivenGameEngine.Media.NAudio
         /// Gets the wave provider to use for loading the sound effect.
         /// </summary>
         /// <param name="stream">The <see cref="Stream"/> to read the file with.</param>
-        /// <param name="path">The path to the requested file to parse the extension from.</param>
+        /// <param name="extension">The extension of the requested file.</param>
         /// <returns>A <see cref="IWaveProvider"/> to return.</returns>
-        private WaveStream GetWaveStream(Stream stream, string path)
+        private WaveStream GetWaveStream(Stream stream, string extension)
         {
-            var extension = Path.GetExtension(path)
-                                .ToLowerInvariant();
-
             switch (extension)
             {
                 case ".wav":
