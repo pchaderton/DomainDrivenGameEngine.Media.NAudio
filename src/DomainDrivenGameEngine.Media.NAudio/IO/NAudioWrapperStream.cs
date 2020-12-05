@@ -2,12 +2,12 @@
 using System.IO;
 using NAudio.Wave;
 
-namespace DomainDrivenGameEngine.Media.NAudio
+namespace DomainDrivenGameEngine.Media.NAudio.IO
 {
     /// <summary>
     /// A <see cref="Stream"/> for reading music data from an NAudio <see cref="WaveStream"/>.
     /// </summary>
-    internal class NAudioMusicStream : Stream
+    internal class NAudioWrapperStream : Stream
     {
         /// <summary>
         /// The <see cref="WaveStream"/> to use for streaming data.
@@ -20,11 +20,11 @@ namespace DomainDrivenGameEngine.Media.NAudio
         private readonly IWaveProvider _provider;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NAudioMusicStream"/> class.
+        /// Initializes a new instance of the <see cref="NAudioWrapperStream"/> class.
         /// </summary>
         /// <param name="stream">The <see cref="WaveStream"/> to use for streaming data.</param>
         /// <param name="provider">The <see cref="IWaveProvider"/> which provides decoded data to the caller.</param>
-        public NAudioMusicStream(WaveStream stream, IWaveProvider provider)
+        public NAudioWrapperStream(WaveStream stream, IWaveProvider provider)
         {
             _stream = stream ?? throw new ArgumentNullException(nameof(stream));
             _provider = provider ?? throw new ArgumentNullException(nameof(provider));
@@ -34,7 +34,7 @@ namespace DomainDrivenGameEngine.Media.NAudio
         public override bool CanRead => true;
 
         /// <inheritdoc/>
-        public override bool CanSeek => false;
+        public override bool CanSeek => true;
 
         /// <inheritdoc/>
         public override bool CanWrite => false;
@@ -69,7 +69,7 @@ namespace DomainDrivenGameEngine.Media.NAudio
         /// <inheritdoc/>
         public override long Seek(long offset, SeekOrigin origin)
         {
-            throw new NotImplementedException();
+            return _stream.Seek(offset, origin);
         }
 
         /// <inheritdoc/>

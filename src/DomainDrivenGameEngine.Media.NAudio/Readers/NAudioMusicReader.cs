@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using System.IO;
 using DomainDrivenGameEngine.Media.Models;
-using DomainDrivenGameEngine.Media.Services;
+using DomainDrivenGameEngine.Media.NAudio.IO;
+using DomainDrivenGameEngine.Media.Readers;
 using NAudio.Wave;
 
-namespace DomainDrivenGameEngine.Media.NAudio
+namespace DomainDrivenGameEngine.Media.NAudio.Readers
 {
     /// <summary>
-    /// An NAudio-based implementation of a <see cref="IMediaSourceService{Music}"/> for use with projects utilizing DomainDrivenGameEngine.Media.
+    /// An NAudio-based implementation of a <see cref="IMediaReader{Music}"/> for use with projects utilizing DomainDrivenGameEngine.Media.
     /// </summary>
     /// <remarks>
     /// Only supports formats that NAudio natively supports, minus any format loaded via the <see cref="MediaFoundationReader"/>.
     /// </remarks>
-    public class NAudioMusicSourceService : BaseMediaSourceService<Music>
+    public class NAudioMusicReader : BaseMediaReader<Music>
     {
         /// <summary>
         /// The extensions this source service supports.
@@ -26,20 +27,20 @@ namespace DomainDrivenGameEngine.Media.NAudio
         };
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NAudioMusicSourceService"/> class.
+        /// Initializes a new instance of the <see cref="NAudioMusicReader"/> class.
         /// </summary>
-        public NAudioMusicSourceService()
+        public NAudioMusicReader()
             : base(SupportedExtensions)
         {
         }
 
         /// <inheritdoc/>
-        public override Music Load(Stream stream, string path, string extension)
+        public override Music Read(Stream stream, string path, string extension)
         {
             // We can't dispose this stream early or we won't be able to load audio later on.
             var waveStream = GetWaveStream(stream, extension);
             var waveProvider16 = waveStream.ToSampleProvider().ToWaveProvider16();
-            return new Music(waveProvider16.WaveFormat.Channels, waveProvider16.WaveFormat.SampleRate, new NAudioMusicStream(waveStream, waveProvider16));
+            return new Music(waveProvider16.WaveFormat.Channels, waveProvider16.WaveFormat.SampleRate, new NAudioWrapperStream(waveStream, waveProvider16), stream);
         }
 
         /// <summary>
