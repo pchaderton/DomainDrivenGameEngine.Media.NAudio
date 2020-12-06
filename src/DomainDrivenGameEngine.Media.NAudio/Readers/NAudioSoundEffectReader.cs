@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using DomainDrivenGameEngine.Media.Models;
 using DomainDrivenGameEngine.Media.NAudio.IO;
 using DomainDrivenGameEngine.Media.Readers;
@@ -37,10 +39,32 @@ namespace DomainDrivenGameEngine.Media.NAudio.Readers
         /// <inheritdoc/>
         public override SoundEffect Read(Stream stream, string path, string extension)
         {
-            // We can't dispose this stream early or we won't be able to load audio later on.
-            var waveStream = GetWaveStream(stream, extension);
-            var waveProvider16 = waveStream.ToSampleProvider().ToWaveProvider16();
-            return new SoundEffect(waveProvider16.WaveFormat.Channels, waveProvider16.WaveFormat.SampleRate, new NAudioWrapperStream(waveStream, waveProvider16), stream);
+            using (var waveStream = GetWaveStream(stream, extension))
+            {
+                var waveProvider16 = waveStream.ToSampleProvider()
+                                               .ToWaveProvider16();
+
+                var allBytes = new List<byte[]>();
+                var readBytes = 0;
+                var totalReadBytes = 0;
+                do
+                {
+                    var byteBuffer = new byte[1024];
+                    readBytes = waveProvider16.Read(byteBuffer, 0, 1024);
+                    if (readBytes > 0)
+                    {
+                        totalReadBytes += readBytes;
+                        allBytes.Add(byteBuffer);
+                    }
+                }
+                while (readBytes != 0);
+
+                var bytes = allBytes.SelectMany(ba => ba)
+                                    .Take(totalReadBytes)
+                                    .ToArray();
+
+                return new SoundEffect(waveProvider16.WaveFormat.Channels, waveProvider16.WaveFormat.SampleRate, new ReadOnlyCollection<byte>(bytes), stream);
+            }
         }
 
         /// <summary>
